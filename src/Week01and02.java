@@ -1,31 +1,42 @@
 import java.util.*;
 
+class DNSEntry{
+    String ip;
+    long expiry;
+    DNSEntry(String ip,long ttl){
+        this.ip=ip;
+        this.expiry=System.currentTimeMillis()+ttl;
+    }
+}
+
 public class Week01and02 {
 
-    static HashMap<String,Integer> stock=new HashMap<>();
-    static LinkedHashMap<Integer,String> waiting=new LinkedHashMap<>();
-    static int position=1;
+    static HashMap<String,DNSEntry> cache=new HashMap<>();
+    static int hits=0;
+    static int miss=0;
 
-    static int checkStock(String p){
-        return stock.getOrDefault(p,0);
+    static String resolve(String domain){
+        DNSEntry e=cache.get(domain);
+        long now=System.currentTimeMillis();
+        if(e!=null && e.expiry>now){
+            hits++;
+            return "Cache HIT "+e.ip;
+        }
+        miss++;
+        String ip="172.217."+new Random().nextInt(200)+"."+new Random().nextInt(200);
+        cache.put(domain,new DNSEntry(ip,300000));
+        return "Cache MISS "+ip;
     }
 
-    static synchronized String purchaseItem(String p,int user){
-        int s=stock.getOrDefault(p,0);
-        if(s>0){
-            stock.put(p,s-1);
-            return "Success "+(s-1)+" units remaining";
-        }else{
-            waiting.put(position,user+"");
-            return "Added to waiting list position "+position++;
-        }
+    static void stats(){
+        int total=hits+miss;
+        double rate=(total==0)?0:(hits*100.0/total);
+        System.out.println("Hit Rate "+rate+"%");
     }
 
     public static void main(String[] args){
-        stock.put("IPHONE15_256GB",100);
-
-        System.out.println(checkStock("IPHONE15_256GB"));
-        System.out.println(purchaseItem("IPHONE15_256GB",12345));
-        System.out.println(purchaseItem("IPHONE15_256GB",67890));
+        System.out.println(resolve("google.com"));
+        System.out.println(resolve("google.com"));
+        stats();
     }
 }
