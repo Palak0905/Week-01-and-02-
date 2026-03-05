@@ -2,43 +2,42 @@ import java.util.*;
 
 public class Week01and02 {
 
-    static HashMap<String,Set<String>> map=new HashMap<>();
+    static HashMap<String,Integer> pageViews=new HashMap<>();
+    static HashMap<String,Set<String>> uniqueUsers=new HashMap<>();
+    static HashMap<String,Integer> sources=new HashMap<>();
 
-    static List<String> ngrams(String text,int n){
-        String[] w=text.split(" ");
-        List<String> list=new ArrayList<>();
-        for(int i=0;i<=w.length-n;i++){
-            String g="";
-            for(int j=0;j<n;j++) g+=w[i+j]+" ";
-            list.add(g.trim());
-        }
-        return list;
+    static void processEvent(String url,String user,String source){
+        pageViews.put(url,pageViews.getOrDefault(url,0)+1);
+
+        uniqueUsers.putIfAbsent(url,new HashSet<>());
+        uniqueUsers.get(url).add(user);
+
+        sources.put(source,sources.getOrDefault(source,0)+1);
     }
 
-    static void addDoc(String id,String text){
-        for(String g:ngrams(text,3)){
-            map.putIfAbsent(g,new HashSet<>());
-            map.get(g).add(id);
-        }
-    }
+    static void dashboard(){
+        PriorityQueue<Map.Entry<String,Integer>> pq=
+                new PriorityQueue<>((a,b)->b.getValue()-a.getValue());
 
-    static void check(String text){
-        Map<String,Integer> score=new HashMap<>();
-        for(String g:ngrams(text,3)){
-            if(map.containsKey(g)){
-                for(String d:map.get(g)){
-                    score.put(d,score.getOrDefault(d,0)+1);
-                }
-            }
+        pq.addAll(pageViews.entrySet());
+
+        int i=0;
+        while(!pq.isEmpty() && i<10){
+            Map.Entry<String,Integer> e=pq.poll();
+            int u=uniqueUsers.get(e.getKey()).size();
+            System.out.println(e.getKey()+" "+e.getValue()+" views "+u+" unique");
+            i++;
         }
-        for(String k:score.keySet()){
-            System.out.println(k+" "+score.get(k));
+
+        for(String s:sources.keySet()){
+            System.out.println(s+" "+sources.get(s));
         }
     }
 
     public static void main(String[] args){
-        addDoc("essay1","data science is very interesting and useful");
-        addDoc("essay2","machine learning and data science are related");
-        check("data science is useful");
+        processEvent("/article/breaking-news","user1","google");
+        processEvent("/article/breaking-news","user2","facebook");
+        processEvent("/sports/championship","user3","direct");
+        dashboard();
     }
 }
