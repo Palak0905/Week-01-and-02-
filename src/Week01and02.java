@@ -1,46 +1,32 @@
 import java.util.*;
 
-class TokenBucket{
-    int tokens;
-    int max;
-    long last;
-    int rate;
-
-    TokenBucket(int max,int rate){
-        this.max=max;
-        this.rate=rate;
-        this.tokens=max;
-        this.last=System.currentTimeMillis();
-    }
-
-    boolean allow(){
-        long now=System.currentTimeMillis();
-        long diff=(now-last)/1000;
-        if(diff>0){
-            tokens=Math.min(max,tokens+(int)(diff*rate));
-            last=now;
-        }
-        if(tokens>0){
-            tokens--;
-            return true;
-        }
-        return false;
-    }
-}
-
 public class Week01and02 {
 
-    static HashMap<String,TokenBucket> map=new HashMap<>();
+    static HashMap<String,Integer> freq=new HashMap<>();
 
-    static String checkRateLimit(String client){
-        map.putIfAbsent(client,new TokenBucket(1000,1));
-        TokenBucket t=map.get(client);
-        if(t.allow()) return "Allowed "+t.tokens+" remaining";
-        return "Denied";
+    static void addQuery(String q){
+        freq.put(q,freq.getOrDefault(q,0)+1);
+    }
+
+    static List<String> search(String prefix){
+        PriorityQueue<Map.Entry<String,Integer>> pq=new PriorityQueue<>((a,b)->b.getValue()-a.getValue());
+        for(String q:freq.keySet()){
+            if(q.startsWith(prefix)) pq.add(Map.entry(q,freq.get(q)));
+        }
+        List<String> res=new ArrayList<>();
+        int i=0;
+        while(!pq.isEmpty() && i<10){
+            res.add(pq.poll().getKey());
+            i++;
+        }
+        return res;
     }
 
     public static void main(String[] args){
-        System.out.println(checkRateLimit("abc123"));
-        System.out.println(checkRateLimit("abc123"));
+        addQuery("java tutorial");
+        addQuery("javascript");
+        addQuery("java download");
+        addQuery("java tutorial");
+        System.out.println(search("jav"));
     }
 }
