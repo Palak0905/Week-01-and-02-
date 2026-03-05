@@ -1,32 +1,46 @@
 import java.util.*;
 
+class Spot{
+    String plate;
+    long entry;
+}
+
 public class Week01and02 {
 
-    static HashMap<String,Integer> freq=new HashMap<>();
+    static Spot[] table=new Spot[500];
 
-    static void addQuery(String q){
-        freq.put(q,freq.getOrDefault(q,0)+1);
+    static int hash(String s){
+        return Math.abs(s.hashCode())%500;
     }
 
-    static List<String> search(String prefix){
-        PriorityQueue<Map.Entry<String,Integer>> pq=new PriorityQueue<>((a,b)->b.getValue()-a.getValue());
-        for(String q:freq.keySet()){
-            if(q.startsWith(prefix)) pq.add(Map.entry(q,freq.get(q)));
+    static int parkVehicle(String plate){
+        int h=hash(plate);
+        int probes=0;
+        while(table[h]!=null){
+            h=(h+1)%500;
+            probes++;
         }
-        List<String> res=new ArrayList<>();
-        int i=0;
-        while(!pq.isEmpty() && i<10){
-            res.add(pq.poll().getKey());
-            i++;
+        table[h]=new Spot();
+        table[h].plate=plate;
+        table[h].entry=System.currentTimeMillis();
+        System.out.println("Assigned "+h+" probes "+probes);
+        return h;
+    }
+
+    static void exitVehicle(String plate){
+        for(int i=0;i<500;i++){
+            if(table[i]!=null && table[i].plate.equals(plate)){
+                long t=(System.currentTimeMillis()-table[i].entry)/1000;
+                table[i]=null;
+                System.out.println("Freed "+i+" duration "+t);
+                return;
+            }
         }
-        return res;
     }
 
     public static void main(String[] args){
-        addQuery("java tutorial");
-        addQuery("javascript");
-        addQuery("java download");
-        addQuery("java tutorial");
-        System.out.println(search("jav"));
+        parkVehicle("ABC1234");
+        parkVehicle("ABC1235");
+        exitVehicle("ABC1234");
     }
 }
