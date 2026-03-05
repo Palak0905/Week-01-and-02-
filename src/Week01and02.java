@@ -2,71 +2,30 @@ import java.util.*;
 
 public class Week01and02 {
 
-    // username -> userId
-    static HashMap<String, Integer> users = new HashMap<>();
+    static HashMap<String,Integer> stock=new HashMap<>();
+    static LinkedHashMap<Integer,String> waiting=new LinkedHashMap<>();
+    static int position=1;
 
-
-    static HashMap<String, Integer> attempts = new HashMap<>();
-
-
-    public static boolean checkAvailability(String username) {
-
-        // increase attempt count
-        attempts.put(username, attempts.getOrDefault(username, 0) + 1);
-
-        return !users.containsKey(username);
+    static int checkStock(String p){
+        return stock.getOrDefault(p,0);
     }
 
-    git add .
-    public static List<String> suggestAlternatives(String username) {
-
-        List<String> suggestions = new ArrayList<>();
-
-        suggestions.add(username + "1");
-        suggestions.add(username + "2");
-
-        if (username.contains("_")) {
-            suggestions.add(username.replace("_", "."));
+    static synchronized String purchaseItem(String p,int user){
+        int s=stock.getOrDefault(p,0);
+        if(s>0){
+            stock.put(p,s-1);
+            return "Success "+(s-1)+" units remaining";
+        }else{
+            waiting.put(position,user+"");
+            return "Added to waiting list position "+position++;
         }
-
-        return suggestions;
     }
 
-    // Get most attempted username
-    public static String getMostAttempted() {
+    public static void main(String[] args){
+        stock.put("IPHONE15_256GB",100);
 
-        String maxUser = "";
-        int maxCount = 0;
-
-        for (String user : attempts.keySet()) {
-            if (attempts.get(user) > maxCount) {
-                maxCount = attempts.get(user);
-                maxUser = user;
-            }
-        }
-
-        return maxUser + " (" + maxCount + " attempts)";
-    }
-
-    public static void main(String[] args) {
-
-        // existing users
-        users.put("john_doe", 101);
-        users.put("admin", 102);
-        users.put("guest", 103);
-
-        System.out.println("john_doe → " + checkAvailability("john_doe"));
-        System.out.println("jane_smith → " + checkAvailability("jane_smith"));
-
-        System.out.println("\nSuggestions for john_doe:");
-        System.out.println(suggestAlternatives("john_doe"));
-
-        // simulate attempts
-        checkAvailability("admin");
-        checkAvailability("admin");
-        checkAvailability("admin");
-
-        System.out.println("\nMost Attempted Username:");
-        System.out.println(getMostAttempted());
+        System.out.println(checkStock("IPHONE15_256GB"));
+        System.out.println(purchaseItem("IPHONE15_256GB",12345));
+        System.out.println(purchaseItem("IPHONE15_256GB",67890));
     }
 }
