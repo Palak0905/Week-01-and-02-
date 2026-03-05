@@ -1,46 +1,41 @@
 import java.util.*;
 
-class Spot{
-    String plate;
-    long entry;
+class Transaction{
+    int id;
+    int amount;
+    String merchant;
+    String time;
+    Transaction(int id,int amount,String merchant,String time){
+        this.id=id;
+        this.amount=amount;
+        this.merchant=merchant;
+        this.time=time;
+    }
 }
 
 public class Week01and02 {
 
-    static Spot[] table=new Spot[500];
+    static List<Transaction> list=new ArrayList<>();
 
-    static int hash(String s){
-        return Math.abs(s.hashCode())%500;
+    static void add(Transaction t){
+        list.add(t);
     }
 
-    static int parkVehicle(String plate){
-        int h=hash(plate);
-        int probes=0;
-        while(table[h]!=null){
-            h=(h+1)%500;
-            probes++;
-        }
-        table[h]=new Spot();
-        table[h].plate=plate;
-        table[h].entry=System.currentTimeMillis();
-        System.out.println("Assigned "+h+" probes "+probes);
-        return h;
-    }
-
-    static void exitVehicle(String plate){
-        for(int i=0;i<500;i++){
-            if(table[i]!=null && table[i].plate.equals(plate)){
-                long t=(System.currentTimeMillis()-table[i].entry)/1000;
-                table[i]=null;
-                System.out.println("Freed "+i+" duration "+t);
-                return;
+    static void twoSum(int target){
+        HashMap<Integer,Transaction> map=new HashMap<>();
+        for(Transaction t:list){
+            int c=target-t.amount;
+            if(map.containsKey(c)){
+                System.out.println(map.get(c).id+" "+t.id);
             }
+            map.put(t.amount,t);
         }
     }
 
     public static void main(String[] args){
-        parkVehicle("ABC1234");
-        parkVehicle("ABC1235");
-        exitVehicle("ABC1234");
+        add(new Transaction(1,500,"StoreA","10:00"));
+        add(new Transaction(2,300,"StoreB","10:15"));
+        add(new Transaction(3,200,"StoreC","10:30"));
+        twoSum(500);
     }
 }
